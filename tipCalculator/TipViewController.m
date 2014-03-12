@@ -17,7 +17,10 @@
 
 - (IBAction)onTap:(id)sender;
 - (void)updateValues;
+
 @end
+
+NSArray *tipValues;
 
 @implementation TipViewController
 @synthesize billTextField;
@@ -41,6 +44,11 @@
     // Do any additional setup after loading the view from its nib.
     [self updateValues];
     self.navigationItem.rightBarButtonItem = [[UIBarButtonItem alloc] initWithTitle:@"Settings" style:UIBarButtonItemStylePlain target:self action:@selector(onSettingsButton)];
+    
+    tipValues = [NSArray arrayWithObjects:
+       [NSNumber numberWithFloat:0.1],
+       [NSNumber numberWithFloat:0.15],
+       [NSNumber numberWithFloat:0.2], nil];
 }
 
 - (void)viewDidUnload
@@ -64,15 +72,16 @@
     [self updateValues];
 }
 
-- (void)updateValues {
-    float billAmount = [self.billTextField.text floatValue];
-    
-    NSArray *tipValues = [NSArray arrayWithObjects: 
-                          [NSNumber numberWithFloat:0.1],
-                          [NSNumber numberWithFloat:0.15],
-                          [NSNumber numberWithFloat:0.2], nil];
+- (void)updateValues{
     
     float tipPercentage = [[tipValues objectAtIndex:tipControl.selectedSegmentIndex] floatValue];
+    [self calculateTipAndTotal:tipPercentage];
+
+}
+
+- (void)calculateTipAndTotal:(float)tipPercentage {
+    
+    float billAmount = [self.billTextField.text floatValue];
     float tipAmount = billAmount*tipPercentage;
     float total = billAmount + tipAmount;
     
@@ -82,6 +91,28 @@
 
 - (void)onSettingsButton {
     [self.navigationController pushViewController:[[SettingsViewController alloc] init] animated:YES];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    int defaultTipAmountIndex = [defaults floatForKey:@"defaultTipAmountIndex"];
+    float defaultTipAmount = [[tipValues objectAtIndex:defaultTipAmountIndex] floatValue];
+    [self calculateTipAndTotal:defaultTipAmount];
+    
+    // update segmented control as well!
+    [tipControl setSelectedSegmentIndex:defaultTipAmountIndex];
+}
+
+- (void)viewDidAppear:(BOOL)animated {
+    
+}
+
+- (void)viewWillDisappear:(BOOL)animated {
+
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+
 }
 
 @end
